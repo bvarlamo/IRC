@@ -39,6 +39,8 @@ void Server::initExecutor()
 	exeCommands.insert(std::pair<std::string, fun>("TOPIC", &topicCommand));
 	exeCommands.insert(std::pair<std::string, fun>("OPER", &operCommand));
 	exeCommands.insert(std::pair<std::string, fun>("SQUIT", &squitCommand));
+	exeCommands.insert(std::pair<std::string, fun>("MODE", &modeCommand));
+	exeCommands.insert(std::pair<std::string, fun>("INVITE", &inviteCommand));
 }
 
 void Server::executor()
@@ -140,7 +142,7 @@ int Server::start_loop()
 					this->pollfds.erase(pfdit);
 					this->clients_nameMap.erase(tmp->getNickname());
 					this->used_clients--;
-					shutdown(pfdit->fd, SHUT_RDWR);
+					shutdown(tmp->getFd(), SHUT_RDWR);
 					// break ;
 				}
 				else{
