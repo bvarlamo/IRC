@@ -1,5 +1,8 @@
 # IRC Server
 
+This project is about creating IRC server.
+You can use Adium IRC client to connect to this server and test it.
+
 __Our start of programming an IRC Server.__
 
 Make the server
