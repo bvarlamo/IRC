@@ -1,4 +1,4 @@
-# written by chelmerd
+
 CXX = c++
 CXXFLAGS = -Werror -Wall -Wextra -std=c++98 -pedantic-errors
 
@@ -10,40 +10,38 @@ CLASSES = \
 	Channel.cpp \
 	Message.cpp \
 	Comms.cpp \
-	utility.cpp \
 	ServerResponse.cpp
-
+ 
 SRCS = \
 	main.cpp \
 	$(addprefix srcs/,$(CLASSES))
 
 HEADERS = $(patsubst %.cpp,%.hpp,$(addprefix srcs/,$(CLASSES)))
 
-TEST = tests
-TESTS = $(wildcard $(TEST)/*.cpp)
-TESTBINS = $(patsubst $(TEST)/%.cpp,$(TEST)/bin/%,$(TESTS))
-
 all: $(NAME)
 
-clean:
-	$(RM) -f $(NAME).dSYM
+bonus: bot
 
-fclean: clean
+clean:
 	$(RM) -f $(NAME)
-	$(RM) -fr $(TEST)/bin
+
+fclean: clean botfclean
+	$(RM) -f bot
 
 re: fclean all
 
 $(NAME): $(SRCS) $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SRCS) -I./srcs -o $@
 
-test: $(TEST)/bin $(TESTBINS)
-	for test in $(TESTBINS) ; do ./$$test ; done
+# for bonus 
+bot: 
+	$(MAKE) -C ./bonus
+	cp ./bonus/bot .
 
-$(TEST)/bin/%: $(TEST)/%.cpp $(addprefix srcs/,$(CLASSES)) | $(TEST)/bin
-	$(CXX) $(CXXFLAGS) $< $(addprefix srcs/,$(CLASSES)) -I./srcs -o $@
+botfclean:
+	$(MAKE) -C ./bonus fclean
 
-$(TEST)/bin:
-	mkdir $@
+botre:
+	$(MAKE) -C ./bonus re
 
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re test bot botfclean botre

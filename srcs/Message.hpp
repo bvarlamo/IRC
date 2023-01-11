@@ -6,15 +6,11 @@
 #include <string>
 #include <vector>
 
-#include <Client.hpp>
-#include <Commands.hpp>
-#include <utility.hpp>
+#include "Client.hpp"
+#include "Commands.hpp"
 
 class Client;
-// TODO: add test for this file
 
-// prefix identifies the sender. Server fills this before realyed to a client
-// <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
 struct prefix {
 	std::string severname;
 
@@ -26,57 +22,51 @@ struct prefix {
 	std::string buildLongPrefix() const;
 };
 
-// forward declaration to break include cycle
-class Client;
-
 class Message
 {
+
 public:
-	Message();
+
 	Message(const std::string& rawMsg, Client* sender);
 	Message(
+		enum Commands cmdType,
 		const std::vector<std::string>& params,
 		Client*							sender);
 	~Message();
 
-
-	const struct prefix&			getPrefix() const;
+	//getter
 	const std::string&				getCommand() const;
 	const std::vector<std::string>& getParams() const;
 	Client*							getSender() const;
 	std::string						getText() const;
 
+	//setters
+	void setCommand(enum Commands cmd);
 	void setParams(const std::vector<std::string>& params);
 	void setSender(Client* sender);
 
-	// void setHostname(const std::string& hostname)
-
 	std::string buildRawMsg() const;
 
-	friend std::ostream& operator<<(std::ostream& os, const Message& msg);
 
 private:
-	struct prefix			 prefix; // empty in msg from client to server
-	std::string				 text;
+	struct prefix			 prefix;
+	std::string		 		 client_prefix;
+	enum ComCategory		 category;
+	enum Commands			 type;
 	std::string				 command;
 	std::vector<std::string> params;
-	Client*					 sender; // NULL in msg from server to client
+	Client*					 sender;
 
-	// string -> enum (e.g. PASS -> 0)
-	static std::pair<enum ComCategory, enum Commands>
-	detectMsgType(const std::string& token);
+	std::string getCommandStr(enum Commands cmd_type);
 
-	// enum -> string (e.g. 0 -> PASS)
-	static const std::string getCommandStr(enum Commands cmd_type);
+	void find_prefx(std::string *raw, std::string *prefix); // finds and removes prefix
+	void find_last_param(std::string *raw, std::string *last_param); // finds and removes last parameter
 
-	static const std::string
-	getCommandCategoryStr(enum ComCategory cmd_category);
 };
 
-// non-member functions
+std::vector<Message> getMessages(const std::string& raw, Client* sender, \
+std::map<Client*, std::string> &incomplete_map);
+std::vector<std::string>	split(const std::string& str, const std::string& delimiter);
 
-std::vector<Message> getMessages(const std::string& raw, Client* sender);
-
-std::ostream& operator<<(std::ostream& os, const Message& msg);
 
 #endif // MESSAGE_HPP

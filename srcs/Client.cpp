@@ -1,33 +1,32 @@
 #include "Client.hpp"
 
-Client::Client(int _id, int cl_fd)
-	: id(_id), client_fd(cl_fd), nickname(), state(LOCKED), username(), realname(), op(false)
+Client::Client(int cl_fd)
+	: client_fd(cl_fd), nickname(), state(LOCKED), username(), realname(), op(false)
 {}
 
-Client::Client() : id(), nickname(), state(LOCKED), username(), realname(), op(false) {}
+Client::Client() : nickname(), state(LOCKED), username(), realname(), op(false) {}
 
 Client::~Client() {}
 
-int Client::setNickname(std::string name)
+int 					Client::setNickname(std::string name)
 {
-	if (state == LOCKED || state == UNINITIALIZED)
+	if (state == LOCKED)
 	{
-		return (-8);//ERR_NOTREGISTERED
+		return (-8);
 	}
+	if (state == SET || nickname.size() > 0)
+		return (-7);
 	nickname = name;
-	if (state == INITIALIZED)
-	{
-		state = SET;
-	}
+	upgradeState();
 	return (-5);
 }
 
-const std::string& Client::getNickname()
+const std::string& 		Client::getNickname()
 {
 	return (nickname);
 }
 
-const Client::State& Client::getState()
+const Client::State& 	Client::getState()
 {
 	return (state);
 }
@@ -41,18 +40,18 @@ int						Client::setUsername(std::string name)
 {
 	if (name.empty())
 	{
-		return (-1);//ERR_NEEDMOREPARAMS 
+		return (-1);
 	}
 	if (state == LOCKED)
 	{
-		return (-2);//ERR_NOTREGISTERED
+		return (-2);
 	}
-	if (state == INITIALIZED || state == SET)
+	if (state == SET || username.size() > 0)
 	{
-		return (-3); //ERR_ALREADYREGISTERED
+		return (-3);
 	}
 	username = name;
-	state = INITIALIZED;
+	upgradeState();
 	return (-4);
 
 }
@@ -91,17 +90,17 @@ int						Client::setRealname(std::string name)
 	return (0);
 }
 
-int Client::getFd()
+int 					Client::getFd()
 {
 	return (client_fd);
 }
 
-void	Client::upgradeState()
+void					Client::upgradeState()
 {
-    if (this->state == LOCKED)
-        this->state = UNINITIALIZED;
-    else if (this->state == UNINITIALIZED)
-        this->state = INITIALIZED;
-    else if (this->state == INITIALIZED)
-        this->state = SET;
+	if (this->state == LOCKED)
+		this->state = UNINITIALIZED;
+	else if (this->state == UNINITIALIZED)
+		this->state = INITIALIZED;
+	else if (this->state == INITIALIZED)
+		this->state = SET;
 }
